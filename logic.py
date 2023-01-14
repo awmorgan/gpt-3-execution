@@ -63,8 +63,29 @@ def parse_block(header: str, response: str) -> str:
 
 
 def handle_exec(response: str) -> str:
-    block = parse_block("EXEC:", response)
     block_log_value("HANDLING EXEC COMMAND", response)
+    block = parse_block("EXEC:", response)
+    #split block into lines
+    lines = block.splitlines()
+    # go through each line and check if it is an import statement
+    # and save the import statements in a list
+    imports = []
+    for line in lines:
+        if line.startswith("import"):
+            imports.append(line)
+    # if there are import statements, move them to the solve function
+    if len(imports) > 0:
+        # find the index of the solve function
+        solve_index = lines.index("def solve():")
+        # insert the imports after the solve function
+        lines[solve_index + 1:solve_index + 1] = imports
+        # remove the imports from the rest of the code
+        for import_statement in imports:
+            lines.remove(import_statement)
+        # join the lines back into a string
+        block = "\n".join(lines)
+
+    block_log_value("BLOCK", block)
     try:
         exec(block)
     except Exception as e:
